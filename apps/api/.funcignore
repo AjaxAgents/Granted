@@ -1,0 +1,7 @@
+src/
+test/
+tools/
+*.ts
+tsconfig.json
+build.mjs
+local.settings*.json

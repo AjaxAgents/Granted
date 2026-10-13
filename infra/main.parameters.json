@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": { "value": "granted" },
+    "env": { "value": "pilot" },
+    "sqlAdminGroupObjectId": { "value": "<object id of the Ajax IT Entra group that administers SQL>" },
+    "sqlAdminGroupName": { "value": "<display name of that group>" },
+    "allowedOrigins": { "value": "https://<static web app host>,capacitor://localhost" },
+    "appUrl": { "value": "https://<static web app host>" }
+  }
+}

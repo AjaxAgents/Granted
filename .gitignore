@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+local.settings.json
+apps/web/ios/App/Pods/
+apps/web/ios/App/App/public/
+*.log
+.DS_Store

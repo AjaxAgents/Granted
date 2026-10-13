@@ -1,0 +1,10 @@
+{
+  "name": "Granted",
+  "short_name": "Granted",
+  "description": "Delivery booking and gate access for Ajax Building Company jobsites.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0133A2",
+  "theme_color": "#0133A2",
+  "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+}

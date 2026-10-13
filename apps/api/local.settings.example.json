@@ -1,0 +1,20 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "TZ": "UTC",
+    "GRANTED_STORE": "memory",
+    "GRANTED_SEED_DEMO": "true",
+    "SESSION_SECRET": "replace-with-64-random-characters-from-openssl-rand-base64-48",
+    "ADMIN_SETUP_CODE_HASH": "",
+    "APP_URL": "http://localhost:5173",
+    "ALLOWED_ORIGINS": "http://localhost:5173,capacitor://localhost",
+    "AUTH_MODE": "local",
+    "EXPOSE_CODES": "true",
+    "MAIL_FROM": "",
+    "ACS_ENDPOINT": "",
+    "SQL_SERVER": "",
+    "SQL_DATABASE": ""
+  }
+}

@@ -1,0 +1,32 @@
+# Publishes the offline demo (no server, demo data only) to GitHub Pages.
+# Turn on Pages for this repository (Settings → Pages → Source: GitHub Actions), then run this workflow.
+# The admin set-up code is NOT included unless the repository secret DEMO_ADMIN_CODE_HASH is set,
+# and that should only ever be a demo-only code: a public page exposes its hash.
+name: Demo on GitHub Pages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: { group: pages, cancel-in-progress: true }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build -w apps/web
+        env:
+          VITE_DEMO_ADMIN_CODE_HASH: ${{ secrets.DEMO_ADMIN_CODE_HASH }}
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: apps/web/dist }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: '${{ steps.d.outputs.page_url }}' }
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,29 @@
+{
+  "name": "@granted/api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Granted API: Azure Functions (Node 22, v4 programming model). Runs the rules on the server and enforces every permission.",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p .",
+    "dev": "tsx src/dev-server.ts",
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/communication-email": "1.1.0",
+    "@azure/functions": "4.16.5",
+    "@azure/identity": "4.13.3",
+    "jose": "6.2.12",
+    "mssql": "12.7.6",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@granted/core": "*",
+    "@granted/services": "*",
+    "@types/mssql": "12.3.0",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15"
+  }
+}

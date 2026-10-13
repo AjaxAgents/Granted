@@ -1,0 +1,24 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Type-check every package
+        run: npm run typecheck
+      - name: Rule, account, QR, service and API tests
+        run: npm test
+      - name: Build the API bundle
+        run: npm run build -w apps/api
+      - name: Build the web app (offline demo build)
+        run: npm run build -w apps/web
+      - name: Dependency audit
+        run: npm audit --audit-level=high
