@@ -10,7 +10,11 @@ There is no AI anywhere at runtime. Every decision is a coded rule with a reason
 
 This is one of two editions built so management can choose. The other is **[GrantedPA](https://github.com/AjaxAgents/GrantedPA)** (Power Apps, SharePoint and Power Automate inside Microsoft 365). See **[docs/decision.md](docs/decision.md)** for a side-by-side comparison.
 
-## Try it in two minutes
+## Try it now
+
+**Proof of concept, no install:** https://ajaxagents.github.io/Granted/. It's the full app on demo data, kept in each visitor's own browser.
+
+## Run it locally
 
 You need [Node.js 22](https://nodejs.org).
 

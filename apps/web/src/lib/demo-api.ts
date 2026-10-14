@@ -10,6 +10,7 @@ import {
 import type { Role } from '@granted/core';
 import { ApiError, type Api, type DemoControls } from './api';
 import { getPref, setPref } from './storage';
+import { DEMO_ADMIN_CODE_HASH } from './demo-admin-code';
 
 const LS_DATA = 'granted-demo-data-v2';
 const LS_SESSION = 'granted-demo-session-v2';
@@ -39,7 +40,7 @@ export class DemoApi implements Api {
     this.svc = new GrantedService({
       store: this.store, mailer: nullMailer, clock: () => this.now(),
       config: {
-        adminCodeHash: (import.meta.env.VITE_DEMO_ADMIN_CODE_HASH as string | undefined) || '',
+        adminCodeHash: (import.meta.env.VITE_DEMO_ADMIN_CODE_HASH as string | undefined) || DEMO_ADMIN_CODE_HASH,
         passwordIterations: 100000, exposeCodes: true, storeAccountMail: true, appUrl: location.origin,
       },
     });
