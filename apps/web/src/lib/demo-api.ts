@@ -85,6 +85,11 @@ export class DemoApi implements Api {
   isSignedIn() { return !!this.userId; }
 
   async restore(): Promise<boolean> {
+    // ?reset in the address clears this device's demo data (a way out if stored data ever goes bad).
+    if (/[?&]reset\b/.test(location.search)) {
+      for (const k of [LS_DATA, LS_SESSION, LS_CLOCK, 'granted.pid', 'granted.maint']) setPref(k, null);
+      history.replaceState(null, '', location.pathname);
+    }
     const snap = getPref<Snapshot | null>(LS_DATA, null);
     if (snap && snap.users && Object.keys(snap.users).length) {
       this.store.load(snap);

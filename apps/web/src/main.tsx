@@ -20,6 +20,7 @@ const base = (import.meta.env.VITE_API_BASE as string | undefined) || '';
 const api: Api = base ? new HttpApi(base.replace(/\/$/, '')) : new DemoApi();
 
 function hideSplash() {
+  (window as unknown as { __grantedReady?: boolean }).__grantedReady = true;
   const sp = document.getElementById('splash');
   if (sp) { sp.classList.add('out'); setTimeout(() => sp.remove(), 400); }
   if (Capacitor.isNativePlatform()) import('@capacitor/splash-screen').then((m) => m.SplashScreen.hide()).catch(() => undefined);

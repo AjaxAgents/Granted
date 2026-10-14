@@ -96,9 +96,17 @@ export function AppProvider({ api, children, onReady }: { api: Api; children: Re
   useEffect(() => {
     let alive = true;
     const minSplash = new Promise((r) => setTimeout(r, 1100));
+    // Never leave people on the splash: if restoring takes too long or fails, go to sign-in.
+    const within = <T,>(p: Promise<T>, ms: number, fallback: T) => Promise.race([p.catch(() => fallback), new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
     (async () => {
-      const ok = await api.restore().catch(() => false);
-      if (ok) await refresh();
+      let ok = false;
+      try {
+        ok = await within(api.restore(), 8000, false);
+        if (ok) await within(refresh(), 8000, undefined);
+      } catch (e) {
+        console.error('Granted start-up', e);
+        ok = false;
+      }
       await minSplash;
       if (!alive) return;
       setScreen(ok ? 'home' : 'login');
