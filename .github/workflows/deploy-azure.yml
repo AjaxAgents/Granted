@@ -1,6 +1,7 @@
-# Deploys the API and the web app to Azure. Runs only when started by hand, after
-# infra/main.bicep has been deployed and the Key Vault secrets are set (docs/operations.md).
-# Uses OpenID Connect: no Azure passwords are stored in GitHub.
+# Updates an existing Azure installation from GitHub (after setup/azure-setup.sh has run once).
+# Started by hand from the Actions tab. Uses OpenID Connect: no Azure passwords are stored in GitHub.
+# Needs repository variables AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID and
+# APP_NAME (the Function App's name, printed by the set-up script). See docs/operations.md.
 name: Deploy to Azure
 on:
   workflow_dispatch:
@@ -19,12 +20,7 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm test
-      - name: Build API package
-        run: |
-          npm run build -w apps/api
-          mkdir -p deploy/api && cp -r apps/api/dist apps/api/host.json deploy/api/
-          node -e "const p=require('./apps/api/package.json');delete p.devDependencies;p.scripts={};require('fs').writeFileSync('deploy/api/package.json',JSON.stringify(p,null,2))"
-          cd deploy/api && npm install --omit=dev --no-package-lock
+      - run: bash setup/package-azure.sh "$PWD/granted-azure.zip"
       - uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
@@ -32,15 +28,5 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       - uses: Azure/functions-action@v1
         with:
-          app-name: ${{ vars.API_APP_NAME }}
-          package: deploy/api
-      - name: Build web app against the API
-        run: npm run build -w apps/web
-        env:
-          VITE_API_BASE: ${{ vars.API_BASE_URL }}
-      - uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
-          action: upload
-          app_location: apps/web/dist
-          skip_app_build: true
+          app-name: ${{ vars.APP_NAME }}
+          package: granted-azure.zip

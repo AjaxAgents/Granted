@@ -99,4 +99,10 @@ describe('API', () => {
     expect(() => loadConfig({ GRANTED_ENV: 'production', GRANTED_STORE: 'memory', SESSION_SECRET: 'x'.repeat(40), EXPOSE_CODES: 'true' })).toThrow(/EXPOSE_CODES|GRANTED_STORE|MAIL_FROM/);
     expect(() => loadConfig({ SESSION_SECRET: 'short' })).toThrow(/SESSION_SECRET/);
   });
+
+  test('H10 unread Key Vault secrets are refused; the app address defaults to the Function App', () => {
+    expect(() => loadConfig({ SESSION_SECRET: '@Microsoft.KeyVault(SecretUri=https://kv.vault.azure.net/secrets/session-secret)' })).toThrow(/Key Vault/);
+    expect(loadConfig({ SESSION_SECRET: 'x'.repeat(40), WEBSITE_HOSTNAME: 'func-granted.azurewebsites.net' }).appUrl).toBe('https://func-granted.azurewebsites.net');
+    expect(loadConfig({ SESSION_SECRET: 'x'.repeat(40), APP_URL: 'https://granted.ajaxbuilding.com/', WEBSITE_HOSTNAME: 'func' }).appUrl).toBe('https://granted.ajaxbuilding.com');
+  });
 });

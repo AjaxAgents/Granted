@@ -1,13 +1,15 @@
 // Granted: Azure resources for one environment (pilot or production).
 //
-//   az group create -n rg-granted-prod -l southcentralus
-//   az deployment group create -g rg-granted-prod -f infra/main.bicep -p infra/main.parameters.json
+// Easiest: run setup/azure-setup.sh in Azure Cloud Shell. It deploys this file, sets the
+// secrets, sets up the database and installs the app (docs/operations.md, "Set-up").
+// By hand:
+//   az group create -n rg-granted-pilot -l southcentralus
+//   az deployment group create -g rg-granted-pilot -f infra/main.bicep -p infra/main.parameters.json
 //
-// Creates: Function App (Flex Consumption, Node 22) with a managed identity,
-// Azure SQL (Microsoft Entra authentication only, serverless), Key Vault (RBAC),
-// Azure Communication Services Email, Static Web App for the web app,
-// Application Insights, and the role assignments between them.
-// Secrets are added to Key Vault after deployment (docs/operations.md); none are in this file.
+// Creates: one Function App (Flex Consumption, Node 22) that serves both the web app and the
+// API at one address, with a managed identity; Azure SQL (Microsoft Entra authentication only,
+// serverless); Key Vault (RBAC); Azure Communication Services Email; Application Insights;
+// and the role assignments between them. Secrets go into Key Vault after deployment; none are in this file.
 
 @description('Short name used in resource names, e.g. granted')
 param appName string = 'granted'
@@ -15,16 +17,19 @@ param appName string = 'granted'
 @allowed(['pilot', 'prod'])
 param env string = 'pilot'
 param location string = resourceGroup().location
-@description('Object ID of the Microsoft Entra group that administers the SQL server (Ajax IT)')
-param sqlAdminGroupObjectId string
-@description('Display name of that group')
-param sqlAdminGroupName string
-@description('Origins allowed to call the API, e.g. https://granted.ajaxbuilding.com,capacitor://localhost')
-param allowedOrigins string
-@description('Public URL of the web app, used in emails')
-param appUrl string
-@description('Static Web Apps region (limited list)')
-param staticWebAppLocation string = 'centralus'
+@description('Object ID of the Microsoft Entra user or group that administers the SQL server')
+param sqlAdminObjectId string
+@description('Sign-in name (user) or display name (group) of that SQL administrator')
+param sqlAdminName string
+@description('User for one person (the set-up script uses whoever runs it), Group for an IT group (recommended for production)')
+@allowed(['User', 'Group'])
+param sqlAdminPrincipalType string = 'Group'
+@description('Extra origins allowed to call the API (the iPhone app). The web app is on the same address and needs nothing here.')
+param allowedOrigins string = 'capacitor://localhost'
+@description('Public address of the app, used in emails. Leave empty to use the Function App address.')
+param appUrl string = ''
+@description('Optional: object ID of the person running set-up, given rights to write the Key Vault secrets')
+param setupUserObjectId string = ''
 
 var suffix = toLower('${appName}-${env}-${uniqueString(resourceGroup().id)}')
 var short = toLower(replace('${appName}${env}${uniqueString(resourceGroup().id)}', '-', ''))
@@ -83,10 +88,10 @@ resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
     administrators: {
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: true
-      login: sqlAdminGroupName
-      sid: sqlAdminGroupObjectId
+      login: sqlAdminName
+      sid: sqlAdminObjectId
       tenantId: subscription().tenantId
-      principalType: 'Group'
+      principalType: sqlAdminPrincipalType
     }
   }
 }
@@ -171,21 +176,14 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'ADMIN_SETUP_CODE_HASH', value: '@Microsoft.KeyVault(SecretUri=${kv}/admin-setup-code-hash)' }
         { name: 'ACS_ENDPOINT', value: 'https://${acs.properties.hostName}' }
         { name: 'MAIL_FROM', value: 'DoNotReply@${emailDomain.properties.fromSenderDomain}' }
-        { name: 'APP_URL', value: appUrl }
+        { name: 'APP_URL', value: appUrl } // empty = https://<function app address>
+        { name: 'AzureWebJobsDisableHomepage', value: 'true' } // "/" is the app
         { name: 'ALLOWED_ORIGINS', value: allowedOrigins }
         { name: 'AUTH_MODE', value: 'local' }
         { name: 'EXPOSE_CODES', value: 'false' }
       ]
     }
   }
-}
-
-// ---------------------------------------------------------------- web app (Static Web Apps)
-resource web 'Microsoft.Web/staticSites@2024-04-01' = {
-  name: 'swa-${suffix}'
-  location: staticWebAppLocation
-  sku: { name: env == 'prod' ? 'Standard' : 'Free', tier: env == 'prod' ? 'Standard' : 'Free' }
-  properties: {}
 }
 
 // ---------------------------------------------------------------- role assignments for the API's managed identity
@@ -196,6 +194,7 @@ var roles = {
   kvSecretsUser: '4633458b-17de-408a-b874-0445c86b69e6'
   monitoringPublisher: '3913510d-42f4-4e42-8a64-420c390055eb'
   contributor: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+  kvSecretsOfficer: 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
 }
 resource rBlob 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storage.id, api.id, roles.blobOwner)
@@ -229,9 +228,17 @@ resource rAcs 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   properties: { roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roles.contributor), principalId: api.identity.principalId, principalType: 'ServicePrincipal' }
 }
 
+// The person running set-up may write (not just read) the Key Vault secrets.
+resource rSetupUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(setupUserObjectId)) {
+  name: guid(vault.id, setupUserObjectId, roles.kvSecretsOfficer)
+  scope: vault
+  properties: { roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roles.kvSecretsOfficer), principalId: setupUserObjectId, principalType: 'User' }
+}
+
+output appUrl string = empty(appUrl) ? 'https://${api.properties.defaultHostName}' : appUrl
 output apiHost string = api.properties.defaultHostName
 output apiName string = api.name
-output webHost string = web.properties.defaultHostname
+output sqlServerName string = sqlServer.name
 output sqlServerFqdn string = sqlServer.properties.fullyQualifiedDomainName
 output keyVaultName string = vault.name
 output mailFrom string = 'DoNotReply@${emailDomain.properties.fromSenderDomain}'

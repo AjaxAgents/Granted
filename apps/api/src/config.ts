@@ -30,7 +30,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     sessionSecret: env.SESSION_SECRET || '',
     sessionDays: Math.min(90, Math.max(1, Number(env.SESSION_DAYS) || 30)),
     adminCodeHash: (env.ADMIN_SETUP_CODE_HASH || '').trim(),
-    appUrl: env.APP_URL || 'https://granted.example.com',
+    appUrl: (env.APP_URL || (env.WEBSITE_HOSTNAME ? 'https://' + env.WEBSITE_HOSTNAME : 'https://granted.example.com')).replace(/\/$/, ''),
     allowedOrigins: list(env.ALLOWED_ORIGINS),
     authMode: env.AUTH_MODE === 'external' ? 'external' : 'local',
     exposeCodes: env.EXPOSE_CODES === 'true',
@@ -44,6 +44,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     production: env.GRANTED_ENV === 'production',
   };
   const problems: string[] = [];
+  // An unresolved Key Vault reference arrives as its own text: refuse it rather than use it as a secret.
+  for (const [k, v] of [['SESSION_SECRET', cfg.sessionSecret], ['ADMIN_SETUP_CODE_HASH', cfg.adminCodeHash]]) {
+    if (v.startsWith('@Microsoft.KeyVault(')) problems.push(k + ' could not be read from Key Vault yet (is the secret set, and does the app have access? Restart the app after setting it).');
+  }
   if (cfg.sessionSecret.length < 32) problems.push('SESSION_SECRET must be at least 32 characters.');
   if (cfg.production) {
     if (cfg.exposeCodes) problems.push('EXPOSE_CODES must be false in production.');

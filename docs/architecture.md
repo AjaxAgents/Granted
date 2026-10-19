@@ -7,16 +7,14 @@ flowchart LR
     WEB["Mobile web page<br/>same React app<br/>live camera scanner (jsQR)"]
   end
   subgraph Azure["Ajax Azure subscription"]
-    SWA["Static Web Apps<br/>web app + privacy, terms, support"]
-    FUNC["Azure Functions (Flex Consumption, Node 22)<br/>apps/api → packages/services → packages/core<br/>managed identity"]
+    FUNC["Azure Functions (Flex Consumption, Node 22)<br/>/ = web app, privacy, terms, support<br/>/api = apps/api → packages/services → packages/core<br/>managed identity"]
     SQL[("Azure SQL (serverless)<br/>Entra-only sign-in<br/>append-only gate and audit logs")]
     KV["Key Vault<br/>session secret, admin-code hash"]
     ACS["Communication Services Email"]
     AI["Application Insights"]
   end
   IOS -- "HTTPS + session token" --> FUNC
-  WEB --> SWA
-  WEB -- "HTTPS + session token" --> FUNC
+  WEB -- "HTTPS, same address + session token" --> FUNC
   FUNC --> SQL
   FUNC --> KV
   FUNC --> ACS

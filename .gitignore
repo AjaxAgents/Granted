@@ -9,3 +9,4 @@ apps/web/ios/App/Pods/
 apps/web/ios/App/App/public/
 *.log
 .DS_Store
+granted-azure.zip

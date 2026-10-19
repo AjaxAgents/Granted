@@ -14,6 +14,16 @@ This is one of two editions built so management can choose. The other is **[Gran
 
 **Proof of concept, no install:** https://ajaxagents.github.io/Granted/. It's the full app on demo data, kept in each visitor's own browser.
 
+## Set it up on your own Azure (one command)
+
+Open [Azure Cloud Shell](https://shell.azure.com) (Bash) as someone with Owner on the subscription, and paste:
+
+```bash
+git clone https://github.com/AjaxAgents/Granted && bash Granted/setup/azure-setup.sh
+```
+
+Answer four questions; about 15 minutes later it prints the app's address. Everything it does, and what's left before production, is in [docs/operations.md](docs/operations.md). The illustrated set-up guide for both editions is in the [GrantedPA repository](https://github.com/AjaxAgents/GrantedPA/blob/main/START-HERE.md).
+
 ## Run it locally
 
 You need [Node.js 22](https://nodejs.org).
@@ -40,21 +50,23 @@ packages/core       The rules. Delivery and gate rules, account and permission r
                     Pure TypeScript, no dependencies. 57 tests.
 packages/services   The application: accounts, projects, team, deliveries, gate, notifications, maintenance mode.
                     Every permission is checked here. Runs on the API, and in the browser for the demo. 23 flow tests.
-apps/api            Azure Functions API (Node 22): sessions, validation, rate limits, Azure SQL store, email. 9 tests.
+apps/api            Azure Functions (Node 22): the API at /api and the web app at /. Sessions, validation, rate limits,
+                    Azure SQL store, email, database migrate tool. 16 tests.
 apps/web            The app: React for the iPhone app (Capacitor, native QR scanner, Keychain) and the mobile web page.
   apps/web/ios      The Xcode project (Info.plist permissions, privacy manifest, icon, splash).
   apps/web/public   Privacy policy, terms and support pages (drafts for legal review).
 db/migrations       Azure SQL schema and the least-privilege database user.
 infra               Bicep for every Azure resource, with managed identities and Key Vault.
+setup               azure-setup.sh (the one-command set-up) and package-azure.sh (builds granted-azure.zip).
 tools               admin-code-hash.mjs (makes the admin set-up code's hash for Key Vault).
 docs                Product spec, rules, architecture, security, App Store compliance, operations, testing, decision.
-.github             CI (type-check, tests, builds, audit), CodeQL, Dependabot, demo and Azure deploy workflows.
+.github             CI (type-check, tests, builds, audit), CodeQL, Dependabot, demo, release and Azure deploy workflows.
 ```
 
 ## Commands
 
 ```bash
-npm test              # all 89 tests (rules, accounts, QR, site time, service flows, API)
+npm test              # all 96 tests (rules, accounts, QR, site time, service flows, API)
 npm run typecheck     # strict TypeScript across every package
 npm run demo          # the app on demo data
 npm run dev -w apps/api                                    # local API with demo data on :7071
@@ -71,7 +83,7 @@ iPhone app (on a Mac with Xcode): `cd apps/web && npm run ios:sync && npm run io
 | Rules, accounts, permissions, maintenance mode | Done and tested |
 | App screens (all three roles, sign-up, sign-in, reset, settings, account deletion) | Done; tested end to end in a browser |
 | API | Done and tested in memory; Azure SQL store and email written to the documented APIs, to be run against the Azure resources |
-| Azure infrastructure (Bicep) | Written and compiles; to be deployed by Ajax IT |
+| Azure infrastructure (Bicep) and one-command set-up | Written, compiles and lint-checked; the app package is tested end to end locally. Not yet run against a live Azure subscription |
 | iPhone app | Xcode project generated and configured; needs a Mac, Ajax's Apple Developer account, then TestFlight |
 | Legal pages | Drafts for Ajax counsel |
 | Microsoft Entra External ID sign-in | API side done (token check, profile set-up); app sign-in screens to be connected once the tenant exists |

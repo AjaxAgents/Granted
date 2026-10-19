@@ -19,9 +19,9 @@ Both editions run the same delivery and gate rules, with the same reason codes a
 | **Separating projects and companies** | Every API call checks project and company; tested | Flows check the project on every write. Each project's lists use SharePoint item permissions (contractors see their own company's items). Admins see their own projects. |
 | **Who can use it without extra cost** | Anyone | Ajax staff with Microsoft 365. Guests need a Power Apps right: either their own company's Microsoft 365 plan that includes Power Apps, or a licence Ajax assigns (Power Apps Premium is US$20 per user per month, rising to US$22 on 1 January 2027 for new terms and renewals). Gmail-type users have no home licence. |
 | **Running cost** | Azure usage (small), Apple Developer US$99 a year | Inside Ajax's Microsoft 365, plus any guest licences, plus Azure Key Vault and Storage if the app is wrapped |
-| **Build and change** | Code. Needs a developer or vendor for changes; CI tests every change (89 tests). | Low-code. Ajax's Power Platform makers can change screens and flows. Rule changes must be repeated in flows by hand, against the shared test cases. |
+| **Build and change** | Code. Needs a developer or vendor for changes; CI tests every change (96 tests). | Low-code. Ajax's Power Platform makers can change screens and flows. Rule changes must be repeated in flows by hand, against the shared test cases. |
 | **IT review** | New Azure resources, penetration test, App Store review | Inside existing Microsoft 365 controls (Conditional Access, MFA, DLP, retention). Guest access and DLP policy reviewed. |
-| **Time to pilot** | Days once Azure and Apple accounts exist (the code is done and tested) | Two to four weeks of maker time to build the app and flows from the specs |
+| **Time to pilot** | About an hour once an Azure subscription exists: one command in Cloud Shell sets up everything for the web app (the iPhone app also needs a Mac and an Apple account) | Two to four weeks of maker time to build the app and flows from the specs |
 | **Scale** | Many projects and companies; SQL with indexes and locking | Good for a few projects. SharePoint list thresholds and flow run limits need care past roughly 5,000 deliveries a list; use one site per project. |
 
 ## A quick way to decide
