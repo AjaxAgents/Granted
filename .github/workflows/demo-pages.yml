@@ -22,7 +22,7 @@ jobs:
         env:
           # Optional: a repository secret holding the hash of a demo-only admin set-up code.
           VITE_DEMO_ADMIN_CODE_HASH: ${{ secrets.DEMO_ADMIN_CODE_HASH }}
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with: { path: apps/web/dist }
   deploy:
     needs: build
