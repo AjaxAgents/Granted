@@ -25,8 +25,8 @@
     "@fontsource/ibm-plex-mono": "5.3.0",
     "@fontsource/ibm-plex-sans": "5.3.0",
     "jsqr": "1.4.0",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.3",
