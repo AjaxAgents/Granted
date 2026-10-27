@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "@azure/communication-email": "1.1.0",
-    "@azure/functions": "4.16.5",
-    "@azure/identity": "4.13.3",
+    "@azure/functions": "4.17.0",
+    "@azure/identity": "4.14.0",
     "jose": "6.2.12",
-    "mssql": "12.7.6",
+    "mssql": "12.7.11",
     "zod": "4.6.7"
   },
   "devDependencies": {
